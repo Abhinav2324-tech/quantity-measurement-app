@@ -33,7 +33,15 @@ public class QuantityMeasurementApp {
 
         System.out.println("1 foot equals 12 inches: " + equal);
     }
+    public static QuantityLength demonstrateLengthConversion(
+            double value, LengthUnit source, LengthUnit target) {
+        return new QuantityLength(value, source).convertTo(target);
+    }
 
+    public static QuantityLength demonstrateLengthConversion(
+            QuantityLength length, LengthUnit target) {
+        return length.convertTo(target);
+    }
     public static void main(String[] args) {
         demonstrateFeetEquality();
         demonstrateInchesEquality();
@@ -46,5 +54,12 @@ public class QuantityMeasurementApp {
         System.out.println("1 centimeter equals 0.393701 inches: " + demonstrateLengthEquality(
                 new QuantityLength(1.0, LengthUnit.CENTIMETERS),
                 new QuantityLength(0.393701, LengthUnit.INCHES)));
+
+        System.out.println("1 foot in inches: "
+                + demonstrateLengthConversion(1.0, LengthUnit.FEET, LengthUnit.INCHES));
+
+        QuantityLength yards = new QuantityLength(3.0, LengthUnit.YARDS);
+        System.out.println("3 yards in feet: "
+                + demonstrateLengthConversion(yards, LengthUnit.FEET));
     }
     }

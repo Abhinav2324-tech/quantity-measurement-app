@@ -1,10 +1,11 @@
 package com.bridgelabz.quantitymeasurement;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 
 /**
- * Represents an immutable length and compares lengths in a common unit.
+ * Represents an immutable length that can be compared or converted.
  */
 public final class QuantityLength {
     private final double value;
@@ -23,16 +24,65 @@ public final class QuantityLength {
         this.unit = unit;
     }
 
-    private BigDecimal convertToBaseUnit() {
+    public double getValue() {
+        return value;
+    }
+
+    public LengthUnit getUnit() {
+        return unit;
+    }
+
+    /**
+     * Converts a raw value between length units without applying equality rounding.
+     *
+     * @throws IllegalArgumentException if the value is not finite, a unit is
+     *         null, or the result overflows or underflows the double range
+     */
+    public static double convert(double value, LengthUnit source, LengthUnit target) {
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Length must be a finite number");
+        }
+
+        if (source == null || target == null) {
+            throw new IllegalArgumentException("Source and target units are required");
+        }
+
+        if (source == target || value == 0.0) {
+            return value;
+        }
+
+        double result = toBaseValue(value, source)
+                .divide(BigDecimal.valueOf(target.getConversionFactor()),
+                        MathContext.DECIMAL128)
+                .doubleValue();
+
+        if (!Double.isFinite(result) || result == 0.0) {
+            throw new IllegalArgumentException("Converted length is outside the double range");
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a new length in the target unit without changing this object.
+     */
+    public QuantityLength convertTo(LengthUnit target) {
+        return new QuantityLength(convert(value, unit, target), target);
+    }
+
+    private static BigDecimal toBaseValue(double value, LengthUnit unit) {
         return BigDecimal.valueOf(value)
-                .multiply(BigDecimal.valueOf(unit.getConversionFactor()))
+                .multiply(BigDecimal.valueOf(unit.getConversionFactor()));
+    }
+
+    private BigDecimal comparisonKey() {
+        return toBaseValue(value, unit)
                 .setScale(6, RoundingMode.HALF_UP)
                 .stripTrailingZeros();
     }
 
     public boolean compare(QuantityLength other) {
-        return other != null
-                && convertToBaseUnit().equals(other.convertToBaseUnit());
+        return other != null && comparisonKey().equals(other.comparisonKey());
     }
 
     @Override
@@ -50,6 +100,11 @@ public final class QuantityLength {
 
     @Override
     public int hashCode() {
-        return convertToBaseUnit().hashCode();
+        return comparisonKey().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return value + " " + unit;
     }
 }
