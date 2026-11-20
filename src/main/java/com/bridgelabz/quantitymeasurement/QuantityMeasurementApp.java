@@ -1,76 +1,42 @@
 package com.bridgelabz.quantitymeasurement;
 
 /**
- * UC 2 — Compares feet with feet and inches with inches.
+ * UC 3 — Demonstrates same-unit and cross-unit length equality.
  */
 public class QuantityMeasurementApp {
 
-    public static final class Feet {
-        private final double value;
-
-        public Feet(double value) {
-            this.value = value;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-
-            if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-
-            Feet other = (Feet) obj;
-            return Double.compare(value, other.value) == 0;
-        }
-
-        @Override
-        public int hashCode() {
-            return Double.hashCode(value);
-        }
-    }
-
-    public static final class Inches {
-        private final double value;
-
-        public Inches(double value) {
-            this.value = value;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-
-            if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-
-            Inches other = (Inches) obj;
-            return Double.compare(value, other.value) == 0;
-        }
-
-        @Override
-        public int hashCode() {
-            return Double.hashCode(value);
-        }
+    public static boolean demonstrateLengthEquality(
+            QuantityLength first, QuantityLength second) {
+        return first.equals(second);
     }
 
     public static void demonstrateFeetEquality() {
-        boolean equal = new Feet(1.0).equals(new Feet(1.0));
-        System.out.println(equal ? "Feet: Equal (true)" : "Feet: Not equal (false)");
+        boolean equal = demonstrateLengthEquality(
+                new QuantityLength(1.0, LengthUnit.FEET),
+                new QuantityLength(1.0, LengthUnit.FEET));
+
+        System.out.println("Feet to feet equal: " + equal);
     }
 
     public static void demonstrateInchesEquality() {
-        boolean equal = new Inches(1.0).equals(new Inches(1.0));
-        System.out.println(equal ? "Inches: Equal (true)" : "Inches: Not equal (false)");
+        boolean equal = demonstrateLengthEquality(
+                new QuantityLength(1.0, LengthUnit.INCHES),
+                new QuantityLength(1.0, LengthUnit.INCHES));
+
+        System.out.println("Inches to inches equal: " + equal);
+    }
+
+    public static void demonstrateFeetInchesComparison() {
+        boolean equal = demonstrateLengthEquality(
+                new QuantityLength(1.0, LengthUnit.FEET),
+                new QuantityLength(12.0, LengthUnit.INCHES));
+
+        System.out.println("1 foot equals 12 inches: " + equal);
     }
 
     public static void main(String[] args) {
         demonstrateFeetEquality();
         demonstrateInchesEquality();
+        demonstrateFeetInchesComparison();
     }
 }
