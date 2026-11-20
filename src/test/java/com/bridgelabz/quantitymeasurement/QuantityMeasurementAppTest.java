@@ -1,66 +1,80 @@
 package com.bridgelabz.quantitymeasurement;
 
-import com.bridgelabz.quantitymeasurement.QuantityMeasurementApp.Feet;
-import com.bridgelabz.quantitymeasurement.QuantityMeasurementApp.Inches;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests equality for feet and inches separately.
+ * Verifies same-unit behavior and cross-unit equality after the refactor.
  */
 class QuantityMeasurementAppTest {
 
-    @Test
-    void testFeetEquality_SameValue() {
-        assertTrue(new Feet(1.0).equals(new Feet(1.0)));
+    @ParameterizedTest
+    @EnumSource(LengthUnit.class)
+    void testSameUnit_SameValue(LengthUnit unit) {
+        assertTrue(new QuantityLength(1.0, unit).equals(new QuantityLength(1.0, unit)));
+    }
+
+    @ParameterizedTest
+    @EnumSource(LengthUnit.class)
+    void testSameUnit_DifferentValue(LengthUnit unit) {
+        assertFalse(new QuantityLength(1.0, unit).equals(new QuantityLength(2.0, unit)));
+    }
+
+    @ParameterizedTest
+    @EnumSource(LengthUnit.class)
+    void testNullComparison(LengthUnit unit) {
+        assertFalse(new QuantityLength(1.0, unit).equals(null));
+    }
+
+    @ParameterizedTest
+    @EnumSource(LengthUnit.class)
+    void testDifferentClass(LengthUnit unit) {
+        assertFalse(new QuantityLength(1.0, unit).equals("1.0"));
+    }
+
+    @ParameterizedTest
+    @EnumSource(LengthUnit.class)
+    void testSameReference(LengthUnit unit) {
+        QuantityLength length = new QuantityLength(1.0, unit);
+        assertTrue(length.equals(length));
     }
 
     @Test
-    void testFeetEquality_DifferentValue() {
-        assertFalse(new Feet(1.0).equals(new Feet(2.0)));
+    void testFeetToInches_EquivalentValue() {
+        assertEquals(new QuantityLength(1.0, LengthUnit.FEET),
+                new QuantityLength(12.0, LengthUnit.INCHES));
     }
 
     @Test
-    void testFeetEquality_NullComparison() {
-        assertFalse(new Feet(1.0).equals(null));
+    void testInchesToFeet_EquivalentValue() {
+        assertEquals(new QuantityLength(12.0, LengthUnit.INCHES),
+                new QuantityLength(1.0, LengthUnit.FEET));
     }
 
     @Test
-    void testFeetEquality_DifferentClass() {
-        assertFalse(new Feet(1.0).equals("1.0"));
+    void testCrossUnit_DifferentValue() {
+        assertNotEquals(new QuantityLength(1.0, LengthUnit.FEET),
+                new QuantityLength(10.0, LengthUnit.INCHES));
     }
 
     @Test
-    void testFeetEquality_SameReference() {
-        Feet measurement = new Feet(1.0);
-        assertTrue(measurement.equals(measurement));
+    void testNullUnit_IsRejected() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new QuantityLength(1.0, null));
     }
 
     @Test
-    void testInchesEquality_SameValue() {
-        assertTrue(new Inches(1.0).equals(new Inches(1.0)));
+    void testNaN_IsRejected() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new QuantityLength(Double.NaN, LengthUnit.FEET));
     }
 
     @Test
-    void testInchesEquality_DifferentValue() {
-        assertFalse(new Inches(1.0).equals(new Inches(2.0)));
-    }
-
-    @Test
-    void testInchesEquality_NullComparison() {
-        assertFalse(new Inches(1.0).equals(null));
-    }
-
-    @Test
-    void testInchesEquality_DifferentClass() {
-        assertFalse(new Inches(1.0).equals("1.0"));
-    }
-
-    @Test
-    void testInchesEquality_SameReference() {
-        Inches measurement = new Inches(1.0);
-        assertTrue(measurement.equals(measurement));
+    void testEquivalentLengths_HaveSameHashCode() {
+        assertEquals(new QuantityLength(1.0, LengthUnit.FEET).hashCode(),
+                new QuantityLength(12.0, LengthUnit.INCHES).hashCode());
     }
 }
