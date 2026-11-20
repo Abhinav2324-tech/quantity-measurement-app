@@ -46,6 +46,10 @@ public class QuantityMeasurementApp {
             QuantityLength first, QuantityLength second) {
         return QuantityLength.add(first, second);
     }
+    public static QuantityLength demonstrateLengthAddition(
+            QuantityLength first, QuantityLength second, LengthUnit targetUnit) {
+        return QuantityLength.add(first, second, targetUnit);
+    }
     public static void main(String[] args) {
         demonstrateFeetEquality();
         demonstrateInchesEquality();
@@ -73,5 +77,10 @@ public class QuantityMeasurementApp {
 
         System.out.println("12 inches + 1 foot = "
                 + demonstrateLengthAddition(twelveInches, oneFoot));
+        System.out.println("1 foot + 12 inches in inches = "
+                + demonstrateLengthAddition(oneFoot, twelveInches, LengthUnit.INCHES));
+
+        System.out.println("1 foot + 12 inches in yards = "
+                + demonstrateLengthAddition(oneFoot, twelveInches, LengthUnit.YARDS));
     }
     }

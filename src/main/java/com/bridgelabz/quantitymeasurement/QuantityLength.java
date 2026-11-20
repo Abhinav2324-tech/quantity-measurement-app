@@ -70,18 +70,42 @@ public final class QuantityLength {
         return new QuantityLength(convert(value, unit, target), target);
     }
     /**
-     * Adds another length and returns a new result in this length's unit.
+     * Adds another length and keeps this length's unit.
      */
     public QuantityLength add(QuantityLength other) {
-        if (other == null) {
-            throw new IllegalArgumentException("Second length is required");
+        return add(this, other, unit);
+    }
+
+    /**
+     * Adds two lengths and defaults to the first operand's unit.
+     */
+    public static QuantityLength add(QuantityLength first, QuantityLength second) {
+        if (first == null) {
+            throw new IllegalArgumentException("First length is required");
         }
 
-        BigDecimal sumInInches = toBaseValue(value, unit)
-                .add(toBaseValue(other.value, other.unit));
+        return first.add(second);
+    }
+
+    /**
+     * Adds two lengths and returns a new result in the requested unit.
+     */
+    public static QuantityLength add(
+            QuantityLength first, QuantityLength second, LengthUnit targetUnit) {
+
+        if (first == null || second == null) {
+            throw new IllegalArgumentException("Both lengths are required");
+        }
+
+        if (targetUnit == null) {
+            throw new IllegalArgumentException("Target unit is required");
+        }
+
+        BigDecimal sumInInches = toBaseValue(first.value, first.unit)
+                .add(toBaseValue(second.value, second.unit));
 
         double result = sumInInches
-                .divide(BigDecimal.valueOf(unit.getConversionFactor()),
+                .divide(BigDecimal.valueOf(targetUnit.getConversionFactor()),
                         MathContext.DECIMAL128)
                 .doubleValue();
 
@@ -90,18 +114,7 @@ public final class QuantityLength {
             throw new IllegalArgumentException("Sum is outside the double range");
         }
 
-        return new QuantityLength(result, unit);
-    }
-
-    /**
-     * Adds two lengths and returns the result in the first length's unit.
-     */
-    public static QuantityLength add(QuantityLength first, QuantityLength second) {
-        if (first == null) {
-            throw new IllegalArgumentException("First length is required");
-        }
-
-        return first.add(second);
+        return new QuantityLength(result, targetUnit);
     }
     private static BigDecimal toBaseValue(double value, LengthUnit unit) {
         return BigDecimal.valueOf(value)
