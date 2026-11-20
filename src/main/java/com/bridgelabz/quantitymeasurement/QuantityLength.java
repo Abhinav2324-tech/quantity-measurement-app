@@ -69,7 +69,40 @@ public final class QuantityLength {
     public QuantityLength convertTo(LengthUnit target) {
         return new QuantityLength(convert(value, unit, target), target);
     }
+    /**
+     * Adds another length and returns a new result in this length's unit.
+     */
+    public QuantityLength add(QuantityLength other) {
+        if (other == null) {
+            throw new IllegalArgumentException("Second length is required");
+        }
 
+        BigDecimal sumInInches = toBaseValue(value, unit)
+                .add(toBaseValue(other.value, other.unit));
+
+        double result = sumInInches
+                .divide(BigDecimal.valueOf(unit.getConversionFactor()),
+                        MathContext.DECIMAL128)
+                .doubleValue();
+
+        if (!Double.isFinite(result)
+                || (result == 0.0 && sumInInches.signum() != 0)) {
+            throw new IllegalArgumentException("Sum is outside the double range");
+        }
+
+        return new QuantityLength(result, unit);
+    }
+
+    /**
+     * Adds two lengths and returns the result in the first length's unit.
+     */
+    public static QuantityLength add(QuantityLength first, QuantityLength second) {
+        if (first == null) {
+            throw new IllegalArgumentException("First length is required");
+        }
+
+        return first.add(second);
+    }
     private static BigDecimal toBaseValue(double value, LengthUnit unit) {
         return BigDecimal.valueOf(value)
                 .multiply(BigDecimal.valueOf(unit.getConversionFactor()));
