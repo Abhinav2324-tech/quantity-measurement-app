@@ -38,5 +38,13 @@ public class QuantityMeasurementApp {
         demonstrateFeetEquality();
         demonstrateInchesEquality();
         demonstrateFeetInchesComparison();
+
+        System.out.println("1 yard equals 3 feet: " + demonstrateLengthEquality(
+                new QuantityLength(1.0, LengthUnit.YARDS),
+                new QuantityLength(3.0, LengthUnit.FEET)));
+
+        System.out.println("1 centimeter equals 0.393701 inches: " + demonstrateLengthEquality(
+                new QuantityLength(1.0, LengthUnit.CENTIMETERS),
+                new QuantityLength(0.393701, LengthUnit.INCHES)));
     }
-}
+    }

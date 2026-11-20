@@ -1,6 +1,7 @@
 package com.bridgelabz.quantitymeasurement;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Represents an immutable length and compares lengths in a common unit.
@@ -25,6 +26,7 @@ public final class QuantityLength {
     private BigDecimal convertToBaseUnit() {
         return BigDecimal.valueOf(value)
                 .multiply(BigDecimal.valueOf(unit.getConversionFactor()))
+                .setScale(6, RoundingMode.HALF_UP)
                 .stripTrailingZeros();
     }
 
