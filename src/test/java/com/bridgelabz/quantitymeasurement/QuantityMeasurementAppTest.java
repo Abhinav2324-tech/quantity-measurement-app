@@ -3,6 +3,7 @@ package com.bridgelabz.quantitymeasurement;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -76,5 +77,39 @@ class QuantityMeasurementAppTest {
     void testEquivalentLengths_HaveSameHashCode() {
         assertEquals(new QuantityLength(1.0, LengthUnit.FEET).hashCode(),
                 new QuantityLength(12.0, LengthUnit.INCHES).hashCode());
+    }
+    @ParameterizedTest
+    @CsvSource({
+            "1.0, YARDS, 3.0, FEET",
+            "3.0, FEET, 1.0, YARDS",
+            "1.0, YARDS, 36.0, INCHES",
+            "36.0, INCHES, 1.0, YARDS",
+            "1.0, CENTIMETERS, 0.393701, INCHES",
+            "2.54, CENTIMETERS, 1.0, INCHES",
+            "1.0, YARDS, 91.44, CENTIMETERS"
+    })
+    void testExtendedUnits_EquivalentValues(
+            double firstValue, LengthUnit firstUnit,
+            double secondValue, LengthUnit secondUnit) {
+        assertEquals(new QuantityLength(firstValue, firstUnit),
+                new QuantityLength(secondValue, secondUnit));
+    }
+
+    @Test
+    void testYardsToFeet_NonEquivalentValues() {
+        assertNotEquals(new QuantityLength(1.0, LengthUnit.YARDS),
+                new QuantityLength(2.0, LengthUnit.FEET));
+    }
+
+    @Test
+    void testCentimetersToFeet_NonEquivalentValues() {
+        assertNotEquals(new QuantityLength(1.0, LengthUnit.CENTIMETERS),
+                new QuantityLength(1.0, LengthUnit.FEET));
+    }
+
+    @Test
+    void testRoundedEquivalentLengths_HaveSameHashCode() {
+        assertEquals(new QuantityLength(1.0, LengthUnit.CENTIMETERS).hashCode(),
+                new QuantityLength(0.393701, LengthUnit.INCHES).hashCode());
     }
 }
