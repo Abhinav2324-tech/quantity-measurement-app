@@ -42,6 +42,10 @@ public class QuantityMeasurementApp {
             QuantityLength length, LengthUnit target) {
         return length.convertTo(target);
     }
+    public static QuantityLength demonstrateLengthAddition(
+            QuantityLength first, QuantityLength second) {
+        return QuantityLength.add(first, second);
+    }
     public static void main(String[] args) {
         demonstrateFeetEquality();
         demonstrateInchesEquality();
@@ -61,5 +65,13 @@ public class QuantityMeasurementApp {
         QuantityLength yards = new QuantityLength(3.0, LengthUnit.YARDS);
         System.out.println("3 yards in feet: "
                 + demonstrateLengthConversion(yards, LengthUnit.FEET));
+        QuantityLength oneFoot = new QuantityLength(1.0, LengthUnit.FEET);
+        QuantityLength twelveInches = new QuantityLength(12.0, LengthUnit.INCHES);
+
+        System.out.println("1 foot + 12 inches = "
+                + demonstrateLengthAddition(oneFoot, twelveInches));
+
+        System.out.println("12 inches + 1 foot = "
+                + demonstrateLengthAddition(twelveInches, oneFoot));
     }
     }
