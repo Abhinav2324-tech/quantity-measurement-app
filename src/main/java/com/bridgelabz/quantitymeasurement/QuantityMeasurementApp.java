@@ -83,6 +83,38 @@ public class QuantityMeasurementApp {
         return QuantityWeight.add(first, second, targetUnit);
     }
 
+
+    /**
+     * UC10: Generic equality demonstration.
+     */
+    public static <U extends IMeasurable> boolean demonstrateEquality(
+            Quantity<U> first,
+            Quantity<U> second) {
+
+        return first.equals(second);
+    }
+
+    /**
+     * UC10: Generic conversion demonstration.
+     */
+    public static <U extends IMeasurable> Quantity<U> demonstrateConversion(
+            Quantity<U> quantity,
+            U targetUnit) {
+
+        return quantity.convertTo(targetUnit);
+    }
+
+    /**
+     * UC10: Generic addition demonstration.
+     */
+    public static <U extends IMeasurable> Quantity<U> demonstrateAddition(
+            Quantity<U> first,
+            Quantity<U> second,
+            U targetUnit) {
+
+        return first.add(second, targetUnit);
+    }
+
     public static void main(String[] args) {
         demonstrateFeetEquality();
         demonstrateInchesEquality();
@@ -144,6 +176,35 @@ public class QuantityMeasurementApp {
                 oneKilogram,
                 new QuantityWeight(500.0, WeightUnit.GRAM),
                 WeightUnit.GRAM));
+
+// UC10: Generic Quantity demonstrations
+
+        Quantity<LengthUnit> length1 =
+                new Quantity<>(1.0, LengthUnit.FEET);
+
+        Quantity<LengthUnit> length2 =
+                new Quantity<>(12.0, LengthUnit.INCHES);
+
+        System.out.println("Generic Length Equality: "
+                + demonstrateEquality(length1, length2));
+
+        System.out.println("Generic Length Addition: "
+                + demonstrateAddition(
+                length1, length2, LengthUnit.INCHES));
+
+        Quantity<WeightUnit> weight1 =
+                new Quantity<>(1.0, WeightUnit.KILOGRAM);
+
+        Quantity<WeightUnit> weight2 =
+                new Quantity<>(500.0, WeightUnit.GRAM);
+
+        System.out.println("Generic Weight Addition: "
+                + demonstrateAddition(
+                weight1, weight2, WeightUnit.KILOGRAM));
+
+        System.out.println("Generic Weight Conversion: "
+                + demonstrateConversion(
+                weight1, WeightUnit.GRAM));
 
     }
     }
