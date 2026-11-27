@@ -50,6 +50,39 @@ public class QuantityMeasurementApp {
             QuantityLength first, QuantityLength second, LengthUnit targetUnit) {
         return QuantityLength.add(first, second, targetUnit);
     }
+
+
+    /**
+     * Demonstrates equality between two weights.
+     */
+    public static boolean demonstrateWeightEquality(
+            QuantityWeight first,
+            QuantityWeight second) {
+
+        return first.equals(second);
+    }
+
+    /**
+     * Demonstrates weight conversion.
+     */
+    public static QuantityWeight demonstrateWeightConversion(
+            QuantityWeight weight,
+            WeightUnit targetUnit) {
+
+        return weight.convertTo(targetUnit);
+    }
+
+    /**
+     * Demonstrates weight addition.
+     */
+    public static QuantityWeight demonstrateWeightAddition(
+            QuantityWeight first,
+            QuantityWeight second,
+            WeightUnit targetUnit) {
+
+        return QuantityWeight.add(first, second, targetUnit);
+    }
+
     public static void main(String[] args) {
         demonstrateFeetEquality();
         demonstrateInchesEquality();
@@ -82,5 +115,35 @@ public class QuantityMeasurementApp {
 
         System.out.println("1 foot + 12 inches in yards = "
                 + demonstrateLengthAddition(oneFoot, twelveInches, LengthUnit.YARDS));
+
+
+// UC9: Weight measurement demonstrations
+
+        QuantityWeight oneKilogram =
+                new QuantityWeight(1.0, WeightUnit.KILOGRAM);
+
+        QuantityWeight thousandGrams =
+                new QuantityWeight(1000.0, WeightUnit.GRAM);
+
+        System.out.println("1 kg equals 1000 g: "
+                + demonstrateWeightEquality(
+                oneKilogram, thousandGrams));
+
+        System.out.println("1 kg converted to grams: "
+                + demonstrateWeightConversion(
+                oneKilogram, WeightUnit.GRAM));
+
+        System.out.println("1 kg + 500 g = "
+                + demonstrateWeightAddition(
+                oneKilogram,
+                new QuantityWeight(500.0, WeightUnit.GRAM),
+                WeightUnit.KILOGRAM));
+
+        System.out.println("1 kg + 500 g in grams = "
+                + demonstrateWeightAddition(
+                oneKilogram,
+                new QuantityWeight(500.0, WeightUnit.GRAM),
+                WeightUnit.GRAM));
+
     }
     }
