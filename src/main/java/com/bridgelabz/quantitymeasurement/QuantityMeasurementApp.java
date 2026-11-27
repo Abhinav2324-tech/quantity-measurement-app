@@ -313,5 +313,56 @@ public class QuantityMeasurementApp {
                 new Quantity<>(2000.0, WeightUnit.GRAM),
                 new Quantity<>(1.0, WeightUnit.KILOGRAM)));
 
+// UC14: Temperature Measurement Demonstration
+
+        Quantity<TemperatureUnit> zeroCelsius =
+                new Quantity<>(0.0, TemperatureUnit.CELSIUS);
+
+        Quantity<TemperatureUnit> thirtyTwoFahrenheit =
+                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
+
+        Quantity<TemperatureUnit> kelvin =
+                new Quantity<>(273.15, TemperatureUnit.KELVIN);
+
+// Equality
+        System.out.println("0 C equals 32 F: "
+                + zeroCelsius.equals(thirtyTwoFahrenheit));
+
+        System.out.println("0 C equals 273.15 K: "
+                + zeroCelsius.equals(kelvin));
+
+// Conversion
+        System.out.println("100 C in Fahrenheit: "
+                + new Quantity<>(100.0, TemperatureUnit.CELSIUS)
+                .convertTo(TemperatureUnit.FAHRENHEIT));
+
+        System.out.println("32 F in Celsius: "
+                + thirtyTwoFahrenheit.convertTo(TemperatureUnit.CELSIUS));
+
+        System.out.println("0 C in Kelvin: "
+                + zeroCelsius.convertTo(TemperatureUnit.KELVIN));
+
+// Unsupported arithmetic
+        try {
+            new Quantity<>(100.0, TemperatureUnit.CELSIUS)
+                    .add(new Quantity<>(50.0, TemperatureUnit.CELSIUS));
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Temperature addition: " + e.getMessage());
+        }
+
+        try {
+            new Quantity<>(100.0, TemperatureUnit.CELSIUS)
+                    .subtract(new Quantity<>(50.0, TemperatureUnit.CELSIUS));
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Temperature subtraction: " + e.getMessage());
+        }
+
+        try {
+            new Quantity<>(100.0, TemperatureUnit.CELSIUS)
+                    .divide(new Quantity<>(50.0, TemperatureUnit.CELSIUS));
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Temperature division: " + e.getMessage());
+        }
+
     }
     }

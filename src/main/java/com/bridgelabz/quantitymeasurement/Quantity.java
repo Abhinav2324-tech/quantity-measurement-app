@@ -167,9 +167,16 @@ public final class Quantity<U extends IMeasurable> {
      * Centralized arithmetic helper.
      * Converts operands to base units and performs the operation.
      */
+
+    /**
+     * UC14: Centralized arithmetic with operation support validation.
+     */
     private double performBaseArithmetic(
             Quantity<U> other,
             ArithmeticOperation operation) {
+
+        // UC14: Reject arithmetic unsupported by the unit category.
+        unit.validateOperationSupport(operation.name());
 
         double firstBase = unit.convertToBaseUnit(value);
         double secondBase =
@@ -190,6 +197,7 @@ public final class Quantity<U extends IMeasurable> {
 
         return result;
     }
+
 
     /**
      * Adds another quantity using the first operand's unit.
