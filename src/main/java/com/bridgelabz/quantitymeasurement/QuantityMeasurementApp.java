@@ -1,5 +1,12 @@
 package com.bridgelabz.quantitymeasurement;
 
+import com.bridgelabz.quantitymeasurement.controller.QuantityMeasurementController;
+import com.bridgelabz.quantitymeasurement.dto.QuantityDTO;
+import com.bridgelabz.quantitymeasurement.repository.IQuantityMeasurementRepository;
+import com.bridgelabz.quantitymeasurement.repository.QuantityMeasurementCacheRepository;
+import com.bridgelabz.quantitymeasurement.service.IQuantityMeasurementService;
+import com.bridgelabz.quantitymeasurement.service.QuantityMeasurementServiceImpl;
+
 /**
  * UC 3 — Demonstrates same-unit and cross-unit length equality.
  */
@@ -147,6 +154,76 @@ public class QuantityMeasurementApp {
             Quantity<U> second) {
 
         return first.divide(second);
+    }
+
+    /**
+     * UC15: Demonstrates the N-Tier architecture.
+     */
+    private static void demonstrateNTierArchitecture() {
+
+        // Repository Layer
+        IQuantityMeasurementRepository repository =
+                QuantityMeasurementCacheRepository.getInstance();
+
+        // Service Layer - constructor injection
+        IQuantityMeasurementService service =
+                new QuantityMeasurementServiceImpl(repository);
+
+        // Controller Layer - constructor injection
+        QuantityMeasurementController controller =
+                new QuantityMeasurementController(service);
+
+        // DTO input objects
+        QuantityDTO tenFeet =
+                new QuantityDTO(10.0, "LENGTH", "FEET");
+
+        QuantityDTO sixInches =
+                new QuantityDTO(6.0, "LENGTH", "INCHES");
+
+        QuantityDTO zeroCelsius =
+                new QuantityDTO(0.0, "TEMPERATURE", "CELSIUS");
+
+        QuantityDTO thirtyTwoFahrenheit =
+                new QuantityDTO(32.0, "TEMPERATURE", "FAHRENHEIT");
+
+        System.out.println("\n=== UC15 N-Tier Architecture ===");
+
+        // Equality
+        controller.displayResult(
+                controller.performComparison(
+                        zeroCelsius, thirtyTwoFahrenheit));
+
+        // Conversion
+        controller.displayResult(
+                controller.performConversion(
+                        tenFeet, "INCHES"));
+
+        // Addition
+        controller.displayResult(
+                controller.performAddition(
+                        tenFeet, sixInches, "FEET"));
+
+        // Subtraction
+        controller.displayResult(
+                controller.performSubtraction(
+                        tenFeet, sixInches, "INCHES"));
+
+        // Division
+        controller.displayResult(
+                controller.performDivision(
+                        tenFeet,
+                        new QuantityDTO(2.0, "LENGTH", "FEET")));
+
+        // Unsupported temperature arithmetic
+        controller.displayResult(
+                controller.performAddition(
+                        zeroCelsius,
+                        thirtyTwoFahrenheit,
+                        "CELSIUS"));
+
+        System.out.println(
+                "Total stored operations: "
+                        + repository.getAllMeasurements().size());
     }
 
     public static void main(String[] args) {
@@ -363,6 +440,7 @@ public class QuantityMeasurementApp {
         } catch (UnsupportedOperationException e) {
             System.out.println("Temperature division: " + e.getMessage());
         }
-
+        // UC15: Execute N-Tier demonstration
+        demonstrateNTierArchitecture();
     }
     }

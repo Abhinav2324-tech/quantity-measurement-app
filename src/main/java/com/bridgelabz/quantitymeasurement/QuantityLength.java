@@ -51,10 +51,8 @@ public final class QuantityLength {
             return value;
         }
 
-        double result = toBaseValue(value, source)
-                .divide(BigDecimal.valueOf(target.getConversionFactor()),
-                        MathContext.DECIMAL128)
-                .doubleValue();
+        double result = target.convertFromBaseUnit(
+                source.convertToBaseUnit(BigDecimal.valueOf(value))).doubleValue();
 
         if (!Double.isFinite(result) || result == 0.0) {
             throw new IllegalArgumentException("Converted length is outside the double range");
@@ -88,7 +86,7 @@ public final class QuantityLength {
     }
 
     /**
-     * Adds two lengths and returns a new result in the requested unit.
+     * Adds two lengths and returns the result in the requested unit.
      */
     public static QuantityLength add(
             QuantityLength first, QuantityLength second, LengthUnit targetUnit) {
@@ -101,28 +99,22 @@ public final class QuantityLength {
             throw new IllegalArgumentException("Target unit is required");
         }
 
-        BigDecimal sumInInches = toBaseValue(first.value, first.unit)
-                .add(toBaseValue(second.value, second.unit));
+        BigDecimal sumInFeet = first.unit.convertToBaseUnit(BigDecimal.valueOf(first.value))
+                .add(second.unit.convertToBaseUnit(BigDecimal.valueOf(second.value)));
 
-        double result = sumInInches
-                .divide(BigDecimal.valueOf(targetUnit.getConversionFactor()),
-                        MathContext.DECIMAL128)
-                .doubleValue();
+        double result = targetUnit.convertFromBaseUnit(sumInFeet).doubleValue();
 
         if (!Double.isFinite(result)
-                || (result == 0.0 && sumInInches.signum() != 0)) {
+                || (result == 0.0 && sumInFeet.signum() != 0)) {
             throw new IllegalArgumentException("Sum is outside the double range");
         }
 
         return new QuantityLength(result, targetUnit);
     }
-    private static BigDecimal toBaseValue(double value, LengthUnit unit) {
-        return BigDecimal.valueOf(value)
-                .multiply(BigDecimal.valueOf(unit.getConversionFactor()));
-    }
+
 
     private BigDecimal comparisonKey() {
-        return toBaseValue(value, unit)
+        return unit.toInches(BigDecimal.valueOf(value))
                 .setScale(6, RoundingMode.HALF_UP)
                 .stripTrailingZeros();
     }
