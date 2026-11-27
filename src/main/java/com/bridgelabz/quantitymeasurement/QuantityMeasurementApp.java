@@ -206,5 +206,36 @@ public class QuantityMeasurementApp {
                 + demonstrateConversion(
                 weight1, WeightUnit.GRAM));
 
+// UC11: Volume Measurement Demonstration
+
+        Quantity<VolumeUnit> oneLitre =
+                new Quantity<>(1.0, VolumeUnit.LITRE);
+
+        Quantity<VolumeUnit> thousandMillilitres =
+                new Quantity<>(1000.0, VolumeUnit.MILLILITRE);
+
+        Quantity<VolumeUnit> oneGallon =
+                new Quantity<>(1.0, VolumeUnit.GALLON);
+
+// Equality
+        System.out.println("1 litre equals 1000 millilitres: "
+                + demonstrateEquality(oneLitre, thousandMillilitres));
+
+// Conversion
+        System.out.println("1 litre in millilitres: "
+                + demonstrateConversion(oneLitre, VolumeUnit.MILLILITRE));
+
+        System.out.println("1 gallon in litres: "
+                + demonstrateConversion(oneGallon, VolumeUnit.LITRE));
+
+// Addition using first operand's unit
+        System.out.println("1 litre + 1000 millilitres: "
+                + oneLitre.add(thousandMillilitres));
+
+// Addition with explicit target unit
+        System.out.println("1 litre + 1 gallon in millilitres: "
+                + demonstrateAddition(
+                oneLitre, oneGallon, VolumeUnit.MILLILITRE));
+
     }
     }
