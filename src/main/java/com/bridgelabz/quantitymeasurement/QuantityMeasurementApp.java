@@ -7,11 +7,17 @@ import com.bridgelabz.quantitymeasurement.repository.QuantityMeasurementCacheRep
 import com.bridgelabz.quantitymeasurement.service.IQuantityMeasurementService;
 import com.bridgelabz.quantitymeasurement.service.QuantityMeasurementServiceImpl;
 
+import com.bridgelabz.quantitymeasurement.repository.QuantityMeasurementDatabaseRepository;
+import com.bridgelabz.quantitymeasurement.util.ApplicationConfig;
+import com.bridgelabz.quantitymeasurement.util.ConnectionPool;
+import java.util.logging.Logger;
+
 /**
  * UC 3 — Demonstrates same-unit and cross-unit length equality.
  */
 public class QuantityMeasurementApp {
-
+    private static final Logger LOGGER =
+            Logger.getLogger(QuantityMeasurementApp.class.getName());
     public static boolean demonstrateLengthEquality(
             QuantityLength first, QuantityLength second) {
         return first.equals(second);
@@ -159,71 +165,106 @@ public class QuantityMeasurementApp {
     /**
      * UC15: Demonstrates the N-Tier architecture.
      */
+
+    /**
+     * UC16: Demonstrates database persistence using N-Tier architecture.
+     */
     private static void demonstrateNTierArchitecture() {
 
-        // Repository Layer
-        IQuantityMeasurementRepository repository =
-                QuantityMeasurementCacheRepository.getInstance();
+        try (IQuantityMeasurementRepository repository =
+                     createRepository()) {
 
-        // Service Layer - constructor injection
-        IQuantityMeasurementService service =
-                new QuantityMeasurementServiceImpl(repository);
+            // Service Layer - constructor injection
+            IQuantityMeasurementService service =
+                    new QuantityMeasurementServiceImpl(repository);
 
-        // Controller Layer - constructor injection
-        QuantityMeasurementController controller =
-                new QuantityMeasurementController(service);
+            // Controller Layer - constructor injection
+            QuantityMeasurementController controller =
+                    new QuantityMeasurementController(service);
 
-        // DTO input objects
-        QuantityDTO tenFeet =
-                new QuantityDTO(10.0, "LENGTH", "FEET");
+            // DTO input objects
+            QuantityDTO tenFeet =
+                    new QuantityDTO(10.0, "LENGTH", "FEET");
 
-        QuantityDTO sixInches =
-                new QuantityDTO(6.0, "LENGTH", "INCHES");
+            QuantityDTO sixInches =
+                    new QuantityDTO(6.0, "LENGTH", "INCHES");
 
-        QuantityDTO zeroCelsius =
-                new QuantityDTO(0.0, "TEMPERATURE", "CELSIUS");
+            QuantityDTO zeroCelsius =
+                    new QuantityDTO(0.0, "TEMPERATURE", "CELSIUS");
 
-        QuantityDTO thirtyTwoFahrenheit =
-                new QuantityDTO(32.0, "TEMPERATURE", "FAHRENHEIT");
+            QuantityDTO thirtyTwoFahrenheit =
+                    new QuantityDTO(32.0, "TEMPERATURE", "FAHRENHEIT");
 
-        System.out.println("\n=== UC15 N-Tier Architecture ===");
+            LOGGER.info("=== UC16 JDBC Demonstration ===");
 
-        // Equality
-        controller.displayResult(
-                controller.performComparison(
-                        zeroCelsius, thirtyTwoFahrenheit));
+            // Equality
+            LOGGER.info(controller.performComparison(
+                    zeroCelsius, thirtyTwoFahrenheit).toString());
 
-        // Conversion
-        controller.displayResult(
-                controller.performConversion(
-                        tenFeet, "INCHES"));
+            // Conversion
+            LOGGER.info(controller.performConversion(
+                    tenFeet, "INCHES").toString());
 
-        // Addition
-        controller.displayResult(
-                controller.performAddition(
-                        tenFeet, sixInches, "FEET"));
+            // Addition
+            LOGGER.info(controller.performAddition(
+                    tenFeet, sixInches, "FEET").toString());
 
-        // Subtraction
-        controller.displayResult(
-                controller.performSubtraction(
-                        tenFeet, sixInches, "INCHES"));
+            // Subtraction
+            LOGGER.info(controller.performSubtraction(
+                    tenFeet, sixInches, "INCHES").toString());
 
-        // Division
-        controller.displayResult(
-                controller.performDivision(
-                        tenFeet,
-                        new QuantityDTO(2.0, "LENGTH", "FEET")));
+            // Division
+            LOGGER.info(controller.performDivision(
+                    tenFeet,
+                    new QuantityDTO(2.0, "LENGTH", "FEET")).toString());
 
-        // Unsupported temperature arithmetic
-        controller.displayResult(
-                controller.performAddition(
-                        zeroCelsius,
-                        thirtyTwoFahrenheit,
-                        "CELSIUS"));
+            // Unsupported temperature arithmetic
+            LOGGER.info(controller.performAddition(
+                    zeroCelsius,
+                    thirtyTwoFahrenheit,
+                    "CELSIUS").toString());
 
-        System.out.println(
-                "Total stored operations: "
-                        + repository.getAllMeasurements().size());
+            // Database statistics
+            LOGGER.info("Total stored operations: "
+                    + repository.getTotalCount());
+
+            LOGGER.info("Length measurements: "
+                    + repository.getMeasurementsByType("LENGTH").size());
+
+            LOGGER.info("Pool statistics: "
+                    + repository.getPoolStatistics());
+        }
+    }
+
+
+    /**
+     * UC16: Selects cache or database storage.
+     */
+    private static IQuantityMeasurementRepository createRepository() {
+
+        ApplicationConfig config = new ApplicationConfig();
+
+        if ("cache".equalsIgnoreCase(config.getRepositoryType())) {
+            LOGGER.info("Using cache repository");
+
+            return QuantityMeasurementCacheRepository.getInstance();
+        }
+
+        if ("database".equalsIgnoreCase(config.getRepositoryType())) {
+            LOGGER.info("Using JDBC database repository");
+
+            ConnectionPool pool = new ConnectionPool(config);
+
+            try {
+                return new QuantityMeasurementDatabaseRepository(pool);
+            } catch (RuntimeException exception) {
+                pool.close();
+                throw exception;
+            }
+        }
+
+        throw new IllegalArgumentException(
+                "Unknown repository type: " + config.getRepositoryType());
     }
 
     public static void main(String[] args) {
