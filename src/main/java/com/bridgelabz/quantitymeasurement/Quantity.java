@@ -134,6 +134,96 @@ public final class Quantity<U extends IMeasurable> {
                 targetUnit);
     }
 
+
+    /**
+     * UC12: Subtracts another quantity from this quantity.
+     * Returns the difference in this quantity's unit.
+     *
+     * @param other quantity to subtract
+     * @return new Quantity representing the difference
+     */
+    public Quantity<U> subtract(Quantity<U> other) {
+        return subtract(other, unit);
+    }
+
+    /**
+     * UC12: Subtracts another quantity and returns
+     * the result in the specified target unit.
+     *
+     * @param other quantity to subtract
+     * @param targetUnit desired result unit
+     * @return new Quantity containing the difference
+     */
+    public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
+
+        if (other == null) {
+            throw new IllegalArgumentException(
+                    "Second quantity cannot be null");
+        }
+
+        validateTargetUnit(targetUnit);
+
+        if (unit.getClass() != other.unit.getClass()) {
+            throw new IllegalArgumentException(
+                    "Cannot subtract different measurement categories");
+        }
+
+        double firstBase = unit.convertToBaseUnit(value);
+        double secondBase = other.unit.convertToBaseUnit(other.value);
+
+        double difference = firstBase - secondBase;
+
+        double result = targetUnit.convertFromBaseUnit(difference);
+
+        return new Quantity<>(
+                roundToTwoDecimals(result),
+                targetUnit);
+    }
+
+    /**
+     * UC12: Divides this quantity by another quantity.
+     * Returns a dimensionless ratio.
+     *
+     * @param other divisor quantity
+     * @return ratio as a double
+     * @throws ArithmeticException if divisor is zero
+     */
+    public double divide(Quantity<U> other) {
+
+        if (other == null) {
+            throw new IllegalArgumentException(
+                    "Divisor quantity cannot be null");
+        }
+
+        if (unit.getClass() != other.unit.getClass()) {
+            throw new IllegalArgumentException(
+                    "Cannot divide different measurement categories");
+        }
+
+        double firstBase = unit.convertToBaseUnit(value);
+        double secondBase = other.unit.convertToBaseUnit(other.value);
+
+        if (!Double.isFinite(firstBase)
+                || !Double.isFinite(secondBase)) {
+            throw new IllegalArgumentException(
+                    "Converted quantity must be finite");
+        }
+
+        if (secondBase == 0.0) {
+            throw new ArithmeticException(
+                    "Cannot divide by zero");
+        }
+
+        double result = firstBase / secondBase;
+
+        if (!Double.isFinite(result)) {
+            throw new ArithmeticException(
+                    "Division result is not finite");
+        }
+
+        return result;
+    }
+
     /**
      * Ensures that the target unit belongs to the same category.
      */
