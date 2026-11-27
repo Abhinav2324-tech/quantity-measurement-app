@@ -3,10 +3,11 @@ package com.bridgelabz.quantitymeasurement;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.function.DoubleBinaryOperator;
 
 /**
- * UC10: Generic quantity class supporting multiple
- * measurement categories using the IMeasurable interface.
+ * UC13: Generic Quantity class with centralized arithmetic logic.
+ * Supports equality, conversion, addition, subtraction and division.
  */
 public final class Quantity<U extends IMeasurable> {
 
@@ -29,6 +30,33 @@ public final class Quantity<U extends IMeasurable> {
         this.unit = unit;
     }
 
+    /**
+     * UC13: Arithmetic operations using lambda expressions.
+     */
+    private enum ArithmeticOperation {
+
+        ADD((a, b) -> a + b),
+
+        SUBTRACT((a, b) -> a - b),
+
+        DIVIDE((a, b) -> {
+            if (b == 0.0) {
+                throw new ArithmeticException("Cannot divide by zero");
+            }
+            return a / b;
+        });
+
+        private final DoubleBinaryOperator operation;
+
+        ArithmeticOperation(DoubleBinaryOperator operation) {
+            this.operation = operation;
+        }
+
+        public double compute(double a, double b) {
+            return operation.applyAsDouble(a, b);
+        }
+    }
+
     public double getValue() {
         return value;
     }
@@ -38,9 +66,10 @@ public final class Quantity<U extends IMeasurable> {
     }
 
     /**
-     * Normalizes measurements for equality comparison.
+     * Normalizes values for equality comparison.
      */
     private BigDecimal comparisonKey() {
+
         double baseValue = unit.convertToBaseUnit(value);
 
         if (!Double.isFinite(baseValue)) {
@@ -54,7 +83,7 @@ public final class Quantity<U extends IMeasurable> {
     }
 
     /**
-     * Compares two quantities of the same measurement category.
+     * Compares quantities belonging to the same category.
      */
     @Override
     public boolean equals(Object obj) {
@@ -81,7 +110,7 @@ public final class Quantity<U extends IMeasurable> {
     }
 
     /**
-     * Converts the quantity to the specified target unit.
+     * Converts a quantity to another compatible unit.
      */
     public Quantity<U> convertTo(U targetUnit) {
 
@@ -97,7 +126,73 @@ public final class Quantity<U extends IMeasurable> {
     }
 
     /**
-     * Adds another quantity in the first operand's unit.
+     * Validates the second operand and optional target unit.
+     */
+    private void validateArithmeticOperands(
+            Quantity<U> other,
+            U targetUnit,
+            boolean targetUnitRequired) {
+
+        if (other == null) {
+            throw new IllegalArgumentException(
+                    "Second quantity cannot be null");
+        }
+
+        if (unit.getClass() != other.unit.getClass()) {
+            throw new IllegalArgumentException(
+                    "Cannot perform arithmetic on different measurement categories");
+        }
+
+        if (!Double.isFinite(value)
+                || !Double.isFinite(other.value)) {
+            throw new IllegalArgumentException(
+                    "Quantity values must be finite");
+        }
+
+        if (targetUnitRequired) {
+
+            if (targetUnit == null) {
+                throw new IllegalArgumentException(
+                        "Target unit cannot be null");
+            }
+
+            if (unit.getClass() != targetUnit.getClass()) {
+                throw new IllegalArgumentException(
+                        "Target unit belongs to a different measurement category");
+            }
+        }
+    }
+
+    /**
+     * Centralized arithmetic helper.
+     * Converts operands to base units and performs the operation.
+     */
+    private double performBaseArithmetic(
+            Quantity<U> other,
+            ArithmeticOperation operation) {
+
+        double firstBase = unit.convertToBaseUnit(value);
+        double secondBase =
+                other.unit.convertToBaseUnit(other.value);
+
+        if (!Double.isFinite(firstBase)
+                || !Double.isFinite(secondBase)) {
+            throw new IllegalArgumentException(
+                    "Converted quantity values must be finite");
+        }
+
+        double result = operation.compute(firstBase, secondBase);
+
+        if (!Double.isFinite(result)) {
+            throw new ArithmeticException(
+                    "Arithmetic result is not finite");
+        }
+
+        return result;
+    }
+
+    /**
+     * Adds another quantity using the first operand's unit.
      */
     public Quantity<U> add(Quantity<U> other) {
         return add(other, unit);
@@ -108,124 +203,58 @@ public final class Quantity<U extends IMeasurable> {
      */
     public Quantity<U> add(Quantity<U> other, U targetUnit) {
 
-        if (other == null) {
-            throw new IllegalArgumentException(
-                    "Second quantity cannot be null");
-        }
+        validateArithmeticOperands(other, targetUnit, true);
 
-        validateTargetUnit(targetUnit);
+        double resultInBase =
+                performBaseArithmetic(other, ArithmeticOperation.ADD);
 
-        if (unit.getClass() != other.unit.getClass()) {
-            throw new IllegalArgumentException(
-                    "Cannot add different measurement categories");
-        }
-
-        double firstBase = unit.convertToBaseUnit(value);
-        double secondBase =
-                other.unit.convertToBaseUnit(other.value);
-
-        double sumInBase = firstBase + secondBase;
-
-        double result =
-                targetUnit.convertFromBaseUnit(sumInBase);
+        double convertedResult =
+                targetUnit.convertFromBaseUnit(resultInBase);
 
         return new Quantity<>(
-                roundToTwoDecimals(result),
+                roundToTwoDecimals(convertedResult),
                 targetUnit);
     }
 
-
     /**
-     * UC12: Subtracts another quantity from this quantity.
-     * Returns the difference in this quantity's unit.
-     *
-     * @param other quantity to subtract
-     * @return new Quantity representing the difference
+     * Subtracts another quantity using the first operand's unit.
      */
     public Quantity<U> subtract(Quantity<U> other) {
         return subtract(other, unit);
     }
 
     /**
-     * UC12: Subtracts another quantity and returns
-     * the result in the specified target unit.
-     *
-     * @param other quantity to subtract
-     * @param targetUnit desired result unit
-     * @return new Quantity containing the difference
+     * Subtracts another quantity in the specified target unit.
      */
     public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
 
-        if (other == null) {
-            throw new IllegalArgumentException(
-                    "Second quantity cannot be null");
-        }
+        validateArithmeticOperands(other, targetUnit, true);
 
-        validateTargetUnit(targetUnit);
+        double resultInBase =
+                performBaseArithmetic(other, ArithmeticOperation.SUBTRACT);
 
-        if (unit.getClass() != other.unit.getClass()) {
-            throw new IllegalArgumentException(
-                    "Cannot subtract different measurement categories");
-        }
-
-        double firstBase = unit.convertToBaseUnit(value);
-        double secondBase = other.unit.convertToBaseUnit(other.value);
-
-        double difference = firstBase - secondBase;
-
-        double result = targetUnit.convertFromBaseUnit(difference);
+        double convertedResult =
+                targetUnit.convertFromBaseUnit(resultInBase);
 
         return new Quantity<>(
-                roundToTwoDecimals(result),
+                roundToTwoDecimals(convertedResult),
                 targetUnit);
     }
 
     /**
-     * UC12: Divides this quantity by another quantity.
-     * Returns a dimensionless ratio.
-     *
-     * @param other divisor quantity
-     * @return ratio as a double
-     * @throws ArithmeticException if divisor is zero
+     * Divides two quantities of the same measurement category.
+     * Returns a dimensionless double.
      */
     public double divide(Quantity<U> other) {
 
-        if (other == null) {
-            throw new IllegalArgumentException(
-                    "Divisor quantity cannot be null");
-        }
+        validateArithmeticOperands(other, null, false);
 
-        if (unit.getClass() != other.unit.getClass()) {
-            throw new IllegalArgumentException(
-                    "Cannot divide different measurement categories");
-        }
-
-        double firstBase = unit.convertToBaseUnit(value);
-        double secondBase = other.unit.convertToBaseUnit(other.value);
-
-        if (!Double.isFinite(firstBase)
-                || !Double.isFinite(secondBase)) {
-            throw new IllegalArgumentException(
-                    "Converted quantity must be finite");
-        }
-
-        if (secondBase == 0.0) {
-            throw new ArithmeticException(
-                    "Cannot divide by zero");
-        }
-
-        double result = firstBase / secondBase;
-
-        if (!Double.isFinite(result)) {
-            throw new ArithmeticException(
-                    "Division result is not finite");
-        }
-
-        return result;
+        return performBaseArithmetic(
+                other, ArithmeticOperation.DIVIDE);
     }
 
     /**
-     * Ensures that the target unit belongs to the same category.
+     * Validates the target unit for conversion.
      */
     private void validateTargetUnit(U targetUnit) {
 
@@ -240,6 +269,9 @@ public final class Quantity<U extends IMeasurable> {
         }
     }
 
+    /**
+     * Rounds arithmetic and conversion results to two decimals.
+     */
     private static double roundToTwoDecimals(double number) {
 
         if (!Double.isFinite(number)) {
