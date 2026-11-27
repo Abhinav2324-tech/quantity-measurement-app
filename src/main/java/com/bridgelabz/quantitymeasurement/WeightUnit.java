@@ -5,7 +5,7 @@ package com.bridgelabz.quantitymeasurement;
  * UC9: Defines weight units and their conversion factors
  * relative to kilograms.
  */
-public enum WeightUnit {
+public enum WeightUnit implements IMeasurable {
 
     KILOGRAM(1.0),
     GRAM(0.001),
@@ -33,5 +33,9 @@ public enum WeightUnit {
      */
     public double convertFromBaseUnit(double baseValue) {
         return baseValue / conversionFactor;
+    }
+    @Override
+    public String getUnitName() {
+        return name();
     }
 }
