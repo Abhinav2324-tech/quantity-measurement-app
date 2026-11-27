@@ -115,6 +115,40 @@ public class QuantityMeasurementApp {
         return first.add(second, targetUnit);
     }
 
+
+    /**
+     * UC12: Demonstrates subtraction using
+     * the first operand's unit.
+     */
+    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(
+            Quantity<U> first,
+            Quantity<U> second) {
+
+        return first.subtract(second);
+    }
+
+    /**
+     * UC12: Demonstrates subtraction using
+     * a specified target unit.
+     */
+    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(
+            Quantity<U> first,
+            Quantity<U> second,
+            U targetUnit) {
+
+        return first.subtract(second, targetUnit);
+    }
+
+    /**
+     * UC12: Demonstrates division of two quantities.
+     */
+    public static <U extends IMeasurable> double demonstrateDivision(
+            Quantity<U> first,
+            Quantity<U> second) {
+
+        return first.divide(second);
+    }
+
     public static void main(String[] args) {
         demonstrateFeetEquality();
         demonstrateInchesEquality();
@@ -236,6 +270,48 @@ public class QuantityMeasurementApp {
         System.out.println("1 litre + 1 gallon in millilitres: "
                 + demonstrateAddition(
                 oneLitre, oneGallon, VolumeUnit.MILLILITRE));
+
+
+// UC12: Subtraction and Division Demonstrations
+
+        Quantity<LengthUnit> tenFeet =
+                new Quantity<>(10.0, LengthUnit.FEET);
+
+        Quantity<LengthUnit> sixInches =
+                new Quantity<>(6.0, LengthUnit.INCHES);
+
+// Subtraction using first operand's unit
+        System.out.println("10 feet - 6 inches = "
+                + demonstrateSubtraction(tenFeet, sixInches));
+
+// Subtraction with explicit target unit
+        System.out.println("10 feet - 6 inches in inches = "
+                + demonstrateSubtraction(
+                tenFeet, sixInches, LengthUnit.INCHES));
+
+// Weight subtraction
+        System.out.println("10 kg - 5000 g = "
+                + demonstrateSubtraction(
+                new Quantity<>(10.0, WeightUnit.KILOGRAM),
+                new Quantity<>(5000.0, WeightUnit.GRAM)));
+
+// Volume subtraction
+        System.out.println("5 L - 500 mL = "
+                + demonstrateSubtraction(
+                new Quantity<>(5.0, VolumeUnit.LITRE),
+                new Quantity<>(500.0, VolumeUnit.MILLILITRE)));
+
+// Division using different length units
+        System.out.println("24 inches / 2 feet = "
+                + demonstrateDivision(
+                new Quantity<>(24.0, LengthUnit.INCHES),
+                new Quantity<>(2.0, LengthUnit.FEET)));
+
+// Weight division
+        System.out.println("2000 grams / 1 kilogram = "
+                + demonstrateDivision(
+                new Quantity<>(2000.0, WeightUnit.GRAM),
+                new Quantity<>(1.0, WeightUnit.KILOGRAM)));
 
     }
     }
